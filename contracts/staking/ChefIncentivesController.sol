@@ -151,7 +151,22 @@ contract ChefIncentivesController is Ownable {
     }
     return claimable;
   }
-
+  function claimableRewardRateForUser(address _user, address[] calldata _tokens) external view returns (uint256) {
+    uint256 claimable = 0;
+    for (uint256 i = 0; i < _tokens.length; i++) {
+      address token = _tokens[i];
+      PoolInfo storage pool = poolInfo[token];
+      UserInfo storage user = userInfo[token][_user];
+      uint256 accRewardPerShare = pool.accRewardPerShare;
+      uint256 lpSupply = pool.totalSupply;
+      if (block.timestamp > pool.lastRewardTime && lpSupply != 0) {
+        uint256 reward = rewardsPerSecond.mul(pool.allocPoint).div(totalAllocPoint);
+        accRewardPerShare = accRewardPerShare.add(reward.mul(1e12).div(lpSupply));
+      }
+      claimable = claimable.add(user.amount.mul(accRewardPerShare).div(1e12).sub(user.rewardDebt));
+    }
+    return claimable;
+  }
   function _updateEmissions() internal {
     uint256 length = emissionSchedule.length;
     if (startTime > 0 && length > 0) {

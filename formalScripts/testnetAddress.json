@@ -1,0 +1,89 @@
+{
+  "Admin": "0xad085e56f5673fd994453bbcdfe6828aa659cb0d",
+  "EmergencyAdmin": "0xad085e56f5673fd994453bbcdfe6828aa659cb0d",
+  "Treasury": "0xad085e56f5673fd994453bbcdfe6828aa659cb0d",
+  "WitnetRouter": "0x49c0bcce51a8b28f92d008394f06d5b259657f33",
+  "WCFX": "0x2ed3dddae5b2f321af0806181fbfa6d049be47d8",
+  "SwappiRouter": "0x873789aaf553fd0b4252d0d2b72c6331c47aff2e",
+  "SwappiFactory": "0x36b83e0d41d1dd9c73a006f0c1cbc1f096e69e34",
+  "GenericLogic": "0xE491C5Df97e23cc6EaE681896F231ec74C3cfAaA",
+  "ValidationLogic": "0x44dBD06734b57C2fFA5BBb809B917Cad7337534B",
+  "ReserveLogic": "0xc6C3eE988E8f9Bf7Cb010e30B50d753D76441acE",
+  "WalletBalanceProvider": "0x5ca9d44c44846F3274427c33A07F47024928A083",
+  "WETHGateway": "0x1CaCD78216F26d9b2436b4c564e42b0713C172e5",
+  "GoledoToken": "0x5dAe579b95dd49F7f6eBeC5779916EBD7c84fB7e",
+  "LendingPoolAddressesProviderRegistry": "0x108d520ce59b7ee6c952236F211C2fe89F21Dc2f",
+  "LendingPoolAddressesProvider": "0xC51685e8a207A58e0755aF3daC4a0700B75E4637",
+  "LendingPoolCollateralManager": "0x6A2Ca4E33be968b7761093bbfd3083Ab44e50Ef2",
+  "LendingPoolImpl": "0xB14ad961fe907B2D7C66813B908F00D8d39281e7",
+  "LendingPool": "0x50C566c092Fe5bD9825904DcbacC02A1b280D16A",
+  "LendingPoolConfiguratorImpl": "0x703A1a2943825EF8d7E9b3A93Ca624036911Bc36",
+  "LendingPoolConfigurator": "0xdb0787122C1eC9dBF0Fe4eF311e130135eB83c50",
+  "AaveOracle": "0xDbC7a17aAdAA9925a9caecb4f6E9B3AA81767CE9",
+  "LendingRateOracle": "0xe51FDb617Bc47d85208496a58a15D42053ccE09f",
+  "AaveProtocolDataProvider": "0x025d4Ee1162E625b4b28EAd20809BdD5e930F931",
+  "MultiFeeDistribution": "0xd461E7D2DB9807Eb07189b207D9EBc56732232B8",
+  "ChefIncentivesController": "0x26cDd580693669968FE5090A635e8C39ac9d8B34",
+  "MasterChef": "0xb9ffd9BB3363EEE33367d0B06b3a084835C0Adb6",
+  "UiPoolDataProvider": "0xDc14Ec870bE6fA7E52f9C74e4844454622904596",
+  "IncentiveDataProvider": "0xF61DD4FAb9DC0f48fF25B2f36C588e2d47b74621",
+  "ATokenImpl": "0x24F4f5021994AC5aFF974A888e24b89E32e7CB31",
+  "StableDebtTokenImpl": "0x0bc9DA7811dc6574D1f8844098040DCba069C4A0",
+  "VariableDebtTokenImpl": "0xb993E6f71da7c4Fb3C7493c34cfCDE49545292CA",
+  "DefaultReserveInterestRateStrategy": "0xFaa7Dd8b03649B069B4FC2249f656Ef77ED273D1",
+  "SwappiLP": "0xF589657dd5bA1F9Fc7d8955533fFcd541fA6753d",
+  "Markets": {
+    "CFX": {
+      "token": "0x2ed3dddae5b2f321af0806181fbfa6d049be47d8",
+      "decimals": 18,
+      "atoken": "0xD77822c1842285AE79E10eCbAE0Db5Fe0B6c75Af",
+      "stoken": "0xDddFB8BFFe7bB3daFA4991ff1b8762a59049Fa77",
+      "vtoken": "0xeb474dC21E0cc3f8D4Be96103527E57a9279B3F0",
+      "oracle": "0x7D7F1926D021fca5683668FAB99A465F72bA231D",
+      "witnetConfig": {
+        "assetId": "0x65784185a07d3add5e7a99a6ddd4477e3c8caad717bac3ba3c3361d99a978c29",
+        "decimals": 6,
+        "timeout": 7200
+      }
+    },
+    "WETH": {
+      "token": "0xcd71270f82f319e0498ff98af8269c3f0d547c65",
+      "decimals": 18,
+      "atoken": "0x35eBC7867F135a802aF8bc513138E46474D81442",
+      "stoken": "0x7044184f31fdA1439F2A5e0C092e9121882431A8",
+      "vtoken": "0x5630ACBF13d2468AeA55101C8C7e183afdf86721",
+      "oracle": "0x02F43Ef3ee782ee1BBD634945d82D08452221d52",
+      "witnetConfig": {
+        "assetId": "0x3d15f7018db5cc80838b684361aaa100bfadf8a11e02d5c1c92e9c6af47626c8",
+        "decimals": 6,
+        "timeout": 7200
+      }
+    },
+    "WBTC": {
+      "token": "0x54593e02c39aeff52b166bd036797d2b1478de8d",
+      "decimals": 18,
+      "atoken": "0x6d9D13d906Ed9B4CEE0423b84A5BF278140f0Fa1",
+      "stoken": "0x5Ab9D11A6B670F2F15e13fdB76189e8708812229",
+      "vtoken": "0x615bC5b0eC3a8a10F90Fe9C6F5b265d6b6168dFa",
+      "oracle": "0x54675a3EC31a185D4bB0EE9b0EC2D934063e6B86",
+      "witnetConfig": {
+        "assetId": "0x24beead43216e490aa240ef0d32e18c57beea168f06eabb94f5193868d500946",
+        "decimals": 6,
+        "timeout": 7200
+      }
+    },
+    "USDT": {
+      "token": "0x7d682e65efc5c13bf4e394b8f376c48e6bae0355",
+      "decimals": 18,
+      "atoken": "0x5cB4db074B2245bc4142684179Db906DC93111b1",
+      "stoken": "0x2Dc6314CdbEc1257eCe549C7Fdf95BF6Db7A5Ffd",
+      "vtoken": "0x8da35eB2f545dAe94fa5A3145b5d294a880a71DA",
+      "oracle": "0x5f45956A0C1413Fc2a257A7a324B28dC54e951F5",
+      "witnetConfig": {
+        "assetId": "0x538f5a25b39995a23c24037d2d38f979c8fa7b00d001e897212d936e6f6556ef",
+        "decimals": 6,
+        "timeout": 172800
+      }
+    }
+  }
+}
