@@ -3,5 +3,5 @@
 $ git submodule update --init --recursive
 $ cd goledo_src
 $ yarn
-$ npx 
+$ npx hardhat --network testnet run formalScripts/*
 ```
