@@ -55,7 +55,7 @@ contract MultiFeeDistribution is IMultiFeeDistribution, Ownable {
   mapping(address => Reward) public rewardData;
 
   // Duration that rewards are streamed over
-  uint256 public constant rewardsDuration = 86400 * 7;
+  uint256 public constant rewardsDuration = 100 * 7;
 
   // Duration of lock/earned penalty period
   uint256 public constant lockDuration = rewardsDuration * 13;

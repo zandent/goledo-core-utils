@@ -735,23 +735,23 @@ async function main() {
       console.log(">> ✅ Done");
     }
   }
-  // await wethGateway.authorizeLendingPool(addresses.LendingPool);
-  // await multiFeeDistribution.setMinters([addresses.MasterChef, addresses.ChefIncentivesController, deployer.address]);
-  // //add gCFX, gUSDT, gWETH, gWBTC as reward
-  // await multiFeeDistribution.addReward(addresses.Markets.CFX.atoken);
-  // await multiFeeDistribution.addReward(addresses.Markets.USDT.atoken);
-  // await multiFeeDistribution.addReward(addresses.Markets.WETH.atoken);
-  // await multiFeeDistribution.addReward(addresses.Markets.WBTC.atoken);
-  // // await multiFeeDistribution.mint(deployer.address, ethers.utils.parseEther("100"), false);
-  // await lendingPoolConfigurator.enableBorrowingOnReserve(addresses.Markets.CFX.token, true);
-  // await lendingPoolConfigurator.enableBorrowingOnReserve(addresses.Markets.USDT.token, true);
-  // await lendingPoolConfigurator.enableBorrowingOnReserve(addresses.Markets.WETH.token, true);
-  // await lendingPoolConfigurator.enableBorrowingOnReserve(addresses.Markets.WBTC.token, true);
-  // await lendingPoolConfigurator.configureReserveAsCollateral(addresses.Markets.CFX.token, 5000, 6500, 11000);
-  // await masterChef.addPool(addresses.SwappiLP, 1);
-  // await lendingPoolConfigurator.configureReserveAsCollateral(addresses.Markets.USDT.token, 8000, 8500, 10500);
-  // // await lendingPoolConfigurator.configureReserveAsCollateral(addresses.Markets.WETH.token, 8000, 8500, 10500);
-  // // await lendingPoolConfigurator.configureReserveAsCollateral(addresses.Markets.WBTC.token, 8000, 8500, 10500);
+  await wethGateway.authorizeLendingPool(addresses.LendingPool);
+  await multiFeeDistribution.setMinters([addresses.MasterChef, addresses.ChefIncentivesController, deployer.address]);
+  //add gCFX, gUSDT, gWETH, gWBTC as reward
+  await multiFeeDistribution.addReward(addresses.Markets.CFX.atoken);
+  await multiFeeDistribution.addReward(addresses.Markets.USDT.atoken);
+  await multiFeeDistribution.addReward(addresses.Markets.WETH.atoken);
+  await multiFeeDistribution.addReward(addresses.Markets.WBTC.atoken);
+  // await multiFeeDistribution.mint(deployer.address, ethers.utils.parseEther("100"), false);
+  await lendingPoolConfigurator.enableBorrowingOnReserve(addresses.Markets.CFX.token, true);
+  await lendingPoolConfigurator.enableBorrowingOnReserve(addresses.Markets.USDT.token, true);
+  await lendingPoolConfigurator.enableBorrowingOnReserve(addresses.Markets.WETH.token, true);
+  await lendingPoolConfigurator.enableBorrowingOnReserve(addresses.Markets.WBTC.token, true);
+  await lendingPoolConfigurator.configureReserveAsCollateral(addresses.Markets.CFX.token, 5000, 6500, 11000);
+  await masterChef.addPool(addresses.SwappiLP, 1);
+  await lendingPoolConfigurator.configureReserveAsCollateral(addresses.Markets.USDT.token, 8000, 8500, 10500);
+  // await lendingPoolConfigurator.configureReserveAsCollateral(addresses.Markets.WETH.token, 8000, 8500, 10500);
+  // await lendingPoolConfigurator.configureReserveAsCollateral(addresses.Markets.WBTC.token, 8000, 8500, 10500);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

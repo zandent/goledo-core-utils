@@ -152,7 +152,30 @@ contract MasterChef is Ownable {
     }
     return claimable;
   }
-
+  function updateNextEmissions(
+    uint128[] memory _startTimeOffset,
+    uint128[] memory _rewardsPerSecond
+  )public onlyOwner {
+    uint256 oldLength = emissionSchedule.length;
+    require(oldLength <= 1, "Emissions still exist.");
+    uint256 length = _startTimeOffset.length;
+    if (oldLength == 1) {
+      EmissionPoint memory e = emissionSchedule[oldLength - 1];
+      emissionSchedule.pop();
+      for (uint256 i = length - 1; i + 1 != 0; i--) {
+        emissionSchedule.push(
+          EmissionPoint({ startTimeOffset: _startTimeOffset[i], rewardsPerSecond: _rewardsPerSecond[i] })
+        );
+      }
+      emissionSchedule.push(e);
+    }else{
+      for (uint256 i = length - 1; i + 1 != 0; i--) {
+        emissionSchedule.push(
+          EmissionPoint({ startTimeOffset: _startTimeOffset[i], rewardsPerSecond: _rewardsPerSecond[i] })
+        );
+      }
+    }
+  }
   function _updateEmissions() internal {
     uint256 length = emissionSchedule.length;
     if (startTime > 0 && length > 0) {
