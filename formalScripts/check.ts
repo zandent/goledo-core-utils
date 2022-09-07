@@ -770,11 +770,11 @@ async function main() {
   console.log("Find LendingPool Proxy at:", lendingPool.address);
   console.log(await lendingPool.getUserAccountData("0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
   // console.log(await lendingPool.getReserveData(addresses.Markets['USDT']['token']));
-  // let atoken = await ethers.getContractAt("AToken", addresses.Markets['USDT']['atoken'], deployer);
-  // console.log("totalSupply", await atoken.totalSupply());
-  // console.log("totalSupply", await atoken.scaledTotalSupply());
-  // console.log("balanceOf", await atoken.balanceOf("0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
-
+  let atoken = await ethers.getContractAt("AToken", addresses.Markets['USDT']['atoken'], deployer);
+  console.log("totalSupply", await atoken.totalSupply());
+  console.log("totalSupply", await atoken.scaledTotalSupply());
+  console.log("balanceOf", await atoken.balanceOf(addresses.Treasury));
+  console.log("RESERVE_TREASURY_ADDRESS", await atoken.RESERVE_TREASURY_ADDRESS());
   // console.log(await uiPoolDataProvider.getReservesData(addresses.LendingPoolAddressesProvider, "0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
   // let vtoken = await ethers.getContractAt("VariableDebtToken", addresses.Markets['WETH']['vtoken'], deployer);
   // console.log(" vtoken balanceOf", await vtoken.balanceOf("0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
@@ -819,7 +819,9 @@ async function main() {
   console.log("multiFeeDistribution.rewardData(addresses.Markets['USDT']['atoken'])", await multiFeeDistribution.rewardData(addresses.Markets['USDT']['atoken']));
   console.log("multiFeeDistribution.claimableRewards()", await multiFeeDistribution.claimableRewards(deployer.address));
   console.log("multiFeeDistribution.rewardPerToken()", await multiFeeDistribution.rewardPerToken(addresses.GoledoToken));
-  console.log(await uiPoolDataProvider.getReservesData(addresses.LendingPoolAddressesProvider, "0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
+  // console.log(await uiPoolDataProvider.getReservesData(addresses.LendingPoolAddressesProvider, "0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
+  // console.log("multiFeeDistribution.getReward()", await multiFeeDistribution.getReward([addresses.GoledoToken, addresses.Markets['CFX']['atoken'], addresses.Markets['USDT']['atoken'], addresses.Markets['WETH']['atoken'],addresses.Markets['WBTC']['atoken']]));
+
 }
 
 // We recommend this pattern to be able to use async/await everywhere

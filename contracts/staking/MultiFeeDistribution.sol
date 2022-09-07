@@ -377,7 +377,7 @@ contract MultiFeeDistribution is IMultiFeeDistribution, Ownable {
         uint256 periodFinish = r.periodFinish;
         require(periodFinish > 0, "Unknown reward token");
         uint256 balance = r.balance;
-        if (periodFinish < block.timestamp.add(rewardsDuration - 86400)) {
+        if (periodFinish < block.timestamp.add(rewardsDuration - 100)) {
           uint256 unseen = IERC20(token).balanceOf(address(this)).sub(balance);
           if (unseen > 0) {
             _notifyReward(token, unseen);
