@@ -76,7 +76,7 @@ const ADDRESSES: {
   testnet: {
     Admin: "0xad085e56f5673fd994453bbcdfe6828aa659cb0d",
     EmergencyAdmin: "0xad085e56f5673fd994453bbcdfe6828aa659cb0d",
-    Treasury: "",
+    Treasury: "0xad085e56f5673fd994453bbcdfe6828aa659cb0d",
     WitnetRouter: "0x49c0bcce51a8b28f92d008394f06d5b259657f33",
     WCFX: "0x2ed3dddae5b2f321af0806181fbfa6d049be47d8",
     SwappiRouter: "0x873789aaf553fd0b4252d0d2b72c6331c47aff2e",
@@ -218,7 +218,9 @@ let wethGateway: WETHGateway;
 
 async function main() {
   const [deployer] = await ethers.getSigners();
-  const addresses = ADDRESSES[network.name];
+  let rawdata = fs.readFileSync("formalScripts/" + network.name + "Address.json");
+  const addresses = JSON.parse(rawdata.toString());
+  // const addresses = ADDRESSES[network.name];
   if (addresses.GenericLogic !== "") {
     const genericLogic = await ethers.getContractAt("GenericLogic", addresses.GenericLogic, deployer);
     console.log("Found GenericLogic at:", genericLogic.address);
@@ -298,12 +300,16 @@ async function main() {
   if (addresses.SwappiFactory !== "") {
     const SwappiFactory = new ethers.Contract(addresses.SwappiFactory, SwappiFactoryJSON.abi, deployer);
     console.log("Found SwappiFactory at:", SwappiFactory.address);
-    const tx = await SwappiFactory.createPair(goledoToken.address, addresses.WCFX);
-    console.log(">> createPair in SwappiFactory, hash:", tx.hash);
-    await tx.wait();
-    console.log(">> ✅ Done");
-    addresses.SwappiLP = await SwappiFactory.getPair(goledoToken.address, addresses.WCFX);
-    console.log("Deploy SwappiLP at:", addresses.SwappiLP);
+    if (addresses.SwappiLP === "") {
+      const tx = await SwappiFactory.createPair(goledoToken.address, addresses.WCFX);
+      console.log(">> createPair in SwappiFactory, hash:", tx.hash);
+      await tx.wait();
+      console.log(">> ✅ Done");
+      addresses.SwappiLP = await SwappiFactory.getPair(goledoToken.address, addresses.WCFX);
+      console.log("Deploy SwappiLP at:", addresses.SwappiLP);
+    } else {
+      console.log("Found SwappiLP at:", addresses.SwappiLP);
+    }
   } else {
     assert(false);
   }
@@ -531,9 +537,6 @@ async function main() {
     addresses.MultiFeeDistribution = multiFeeDistribution.address;
     console.log("Deploy MultiFeeDistribution at:", multiFeeDistribution.address);
   }
-  if (addresses.Treasury === "") {
-    addresses.Treasury = addresses.MultiFeeDistribution;
-  }
 
   if (addresses.ChefIncentivesController !== "") {
     chefIncentivesController = await ethers.getContractAt(
@@ -733,19 +736,90 @@ async function main() {
       console.log(">> ✅ Done");
     }
   }
-  let data = JSON.stringify(addresses, null, 2);
-  fs.writeFileSync("formalScripts/" + network.name + "Address.json", data);
-//   await wethGateway.authorizeLendingPool(addresses.LendingPool);
-//   // await multiFeeDistribution.mint(deployer.address, ethers.utils.parseEther("100"), false);
-//   await multiFeeDistribution.setMinters([addresses.MasterChef, addresses.ChefIncentivesController, deployer.address]);
+  console.log("userInfo: ", await chefIncentivesController.userInfo("0xbB95Fdc15B2ccDab60B1403f225d3f8182f521ef", "0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
+  console.log("userBaseClaimable: ", await chefIncentivesController.userBaseClaimable("0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
 
-//   await lendingPoolConfigurator.enableBorrowingOnReserve(addresses.Markets.CFX.token, true);
-//   await lendingPoolConfigurator.enableBorrowingOnReserve(addresses.Markets.USDT.token, true);
-//   await lendingPoolConfigurator.enableBorrowingOnReserve(addresses.Markets.WETH.token, true);
-//   await lendingPoolConfigurator.enableBorrowingOnReserve(addresses.Markets.WBTC.token, true);
-//   await lendingPoolConfigurator.configureReserveAsCollateral(addresses.Markets.CFX.token, 5000, 6500, 11000);
-//   await masterChef.addPool(addresses.SwappiLP, 1);
-//   await lendingPoolConfigurator.configureReserveAsCollateral(addresses.Markets.USDT.token, 8000, 8500, 10500);
+  console.log("usdt poolInfo: ", await chefIncentivesController.poolInfo("0x9E9D93b39437F7c6ecD7Bf4e52E9a24c50E20FE8"));
+  const StableDebtToken = await ethers.getContractAt("StableDebtToken", "0x189Dc84dEb8bB3eDC0b7596aAfFA382921535581", deployer);
+  console.log("Found usdt StableDebtToken at:", StableDebtToken.address);
+  console.log("usdt getIncentivesController()", await StableDebtToken.getIncentivesController());
+
+  multiFeeDistribution = await ethers.getContractAt("MultiFeeDistribution", addresses.MultiFeeDistribution, deployer);
+  console.log("Found MultiFeeDistribution at:", multiFeeDistribution.address);
+  console.log("MultiFeeDistribution rewardTokens(0)", await multiFeeDistribution.rewardTokens(0));
+  // console.log("MultiFeeDistribution rewardTokens(1)", await multiFeeDistribution.rewardTokens(1));
+  // console.log("MultiFeeDistribution rewardTokens(2)", await multiFeeDistribution.rewardTokens(2));
+  // console.log("MultiFeeDistribution rewardTokens(3)", await multiFeeDistribution.rewardTokens(3));
+  console.log("MultiFeeDistribution rewardData()", await multiFeeDistribution.rewardData(addresses.GoledoToken));
+  console.log("MultiFeeDistribution claimableRewards()", await multiFeeDistribution.claimableRewards("0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
+  console.log("MultiFeeDistribution unlockedBalance()", await multiFeeDistribution.unlockedBalance("0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
+  console.log("MultiFeeDistribution lockedBalances()", await multiFeeDistribution.lockedBalances("0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
+  console.log("MultiFeeDistribution withdrawableBalance()", await multiFeeDistribution.withdrawableBalance("0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
+  console.log("MultiFeeDistribution earnedBalances()", await multiFeeDistribution.earnedBalances("0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
+  // // let tx = await multiFeeDistribution.getReward([addresses.GoledoToken]); await tx.wait();
+  // let goledoToken = await ethers.getContractAt("GoledoToken", addresses.GoledoToken, deployer);
+  // console.log("Found GoledoToken at:", goledoToken.address);
+  // console.log("goledoToken balanceOf()", await goledoToken.balanceOf("0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
+  // console.log("goledoToken balanceOf()", await goledoToken.balanceOf(multiFeeDistribution.address));
+
+  let uiPoolDataProvider = await ethers.getContractAt("UiPoolDataProvider", addresses.UiPoolDataProvider, deployer);
+  // console.log("Found UiPoolDataProvider at:", uiPoolDataProvider.address);
+  // // console.log(await uiPoolDataProvider.getReservesData(addresses.LendingPoolAddressesProvider, "0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
+  // // console.log(await uiPoolDataProvider.getSimpleReservesData(addresses.LendingPoolAddressesProvider));
+  lendingPool = await ethers.getContractAt("LendingPool", addresses.LendingPool, deployer);
+  console.log("Find LendingPool Proxy at:", lendingPool.address);
+  console.log(await lendingPool.getUserAccountData("0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
+  // console.log(await lendingPool.getReserveData(addresses.Markets['USDT']['token']));
+  // let atoken = await ethers.getContractAt("AToken", addresses.Markets['USDT']['atoken'], deployer);
+  // console.log("totalSupply", await atoken.totalSupply());
+  // console.log("totalSupply", await atoken.scaledTotalSupply());
+  // console.log("balanceOf", await atoken.balanceOf("0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
+
+  // console.log(await uiPoolDataProvider.getReservesData(addresses.LendingPoolAddressesProvider, "0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
+  // let vtoken = await ethers.getContractAt("VariableDebtToken", addresses.Markets['WETH']['vtoken'], deployer);
+  // console.log(" vtoken balanceOf", await vtoken.balanceOf("0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
+  // console.log(" vtoken totalSupply", await vtoken.totalSupply());
+  
+  // console.log("MultiFeeDistribution claimableRewards()", await multiFeeDistribution.claimableRewards("0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
+  // var oldRewards = await multiFeeDistribution.claimableRewards("0xad085e56f5673fd994453bbcdfe6828aa659cb0d");
+  // console.log("MultiFeeDistribution claimableRewards()", oldRewards);
+  // var blockNumBefore = await ethers.provider.getBlockNumber();
+  // var blockBefore = await ethers.provider.getBlock(blockNumBefore);
+  // var timestampBefore = blockBefore.timestamp;
+  // console.log("timestamp is", timestampBefore);
+  // await new Promise(r => setTimeout(r, 5000));
+  // var newRewards = await multiFeeDistribution.claimableRewards("0xad085e56f5673fd994453bbcdfe6828aa659cb0d");
+  // console.log("MultiFeeDistribution claimableRewards()", newRewards);
+  // var blockNumAfter = await ethers.provider.getBlockNumber();
+  // var blockAfter = await ethers.provider.getBlock(blockNumAfter);
+  // var timestampAfter = blockAfter.timestamp;
+  // console.log("timestamp is", timestampAfter);
+  // let rate = (BigNumber.from(newRewards[0]['amount']).sub(BigNumber.from(oldRewards[0]['amount']))).div(timestampAfter - timestampBefore);
+  // console.log("reward rate = ", rate);
+  // console.log("multiFeeDistribution.lockedSupply()", await multiFeeDistribution.lockedSupply());
+  // let MasterChef = await ethers.getContractAt("MasterChef", addresses.MasterChef, deployer);
+  // var oldRewards = await MasterChef.claimableReward("0xad085e56f5673fd994453bbcdfe6828aa659cb0d",[addresses.SwappiLP]);
+  // console.log("MasterChef claimableRewards()", oldRewards[0]);
+  // var blockNumBefore = await ethers.provider.getBlockNumber();
+  // var blockBefore = await ethers.provider.getBlock(blockNumBefore);
+  // var timestampBefore = blockBefore.timestamp;
+  // console.log("timestamp is", timestampBefore);
+  // await new Promise(r => setTimeout(r, 5000));
+  // var newRewards = await MasterChef.claimableReward("0xad085e56f5673fd994453bbcdfe6828aa659cb0d",[addresses.SwappiLP]);
+  // console.log("MasterChef claimableRewards()", newRewards);
+  // var blockNumAfter = await ethers.provider.getBlockNumber();
+  // var blockAfter = await ethers.provider.getBlock(blockNumAfter);
+  // var timestampAfter = blockAfter.timestamp;
+  // console.log("timestamp is", timestampAfter);
+  // let rate = (BigNumber.from(newRewards[0]).sub(BigNumber.from(oldRewards[0]))).div(timestampAfter - timestampBefore);
+  // console.log("reward rate = ", rate);
+  // console.log("rewardrate in contract", await MasterChef.rewardsPerSecond());
+  console.log("multiFeeDistribution.lockedSupply()", await multiFeeDistribution.lockedSupply());
+  console.log("multiFeeDistribution.rewardData()", await multiFeeDistribution.rewardData(addresses.GoledoToken));
+  console.log("multiFeeDistribution.rewardData(addresses.Markets['USDT']['atoken'])", await multiFeeDistribution.rewardData(addresses.Markets['USDT']['atoken']));
+  console.log("multiFeeDistribution.claimableRewards()", await multiFeeDistribution.claimableRewards(deployer.address));
+  console.log("multiFeeDistribution.rewardPerToken()", await multiFeeDistribution.rewardPerToken(addresses.GoledoToken));
+  console.log(await uiPoolDataProvider.getReservesData(addresses.LendingPoolAddressesProvider, "0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
 }
 
 // We recommend this pattern to be able to use async/await everywhere
