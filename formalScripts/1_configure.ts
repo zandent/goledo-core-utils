@@ -199,7 +199,7 @@ const ADDRESSES: {
   },
 };
 
-const MAX_SUPPLY = ethers.utils.parseEther("100000000");
+const MAX_SUPPLY = ethers.utils.parseEther("1000000000");
 
 let goledoToken: GoledoToken;
 let lendingPoolAddressesProviderRegistry: LendingPoolAddressesProviderRegistry;

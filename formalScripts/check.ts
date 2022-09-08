@@ -1,5 +1,5 @@
 /* eslint-disable node/no-missing-import */
-import { constants } from "ethers";
+import { BigNumber, constants } from "ethers";
 import { ethers, network } from "hardhat";
 import {
   AaveOracle,
@@ -18,7 +18,6 @@ import {
 } from "../typechain";
 import * as fs from 'fs';
 import assert from 'assert-ts';
-const { BigNumber } = require("ethers");
 const SwappiRouterJSON = require(`./SwappiRouter.sol/SwappiRouter.json`);
 const SwappiFactoryJSON = require(`./SwappiFactory.sol/SwappiFactory.json`);
 const ADDRESSES: {
@@ -200,7 +199,7 @@ const ADDRESSES: {
   },
 };
 
-const MAX_SUPPLY = ethers.utils.parseEther("100000000");
+const MAX_SUPPLY = ethers.utils.parseEther("1000000000");
 
 let goledoToken: GoledoToken;
 let lendingPoolAddressesProviderRegistry: LendingPoolAddressesProviderRegistry;
@@ -752,28 +751,30 @@ async function main() {
   // // console.log("MultiFeeDistribution rewardTokens(3)", await multiFeeDistribution.rewardTokens(3));
   // console.log("MultiFeeDistribution rewardData()", await multiFeeDistribution.rewardData(addresses.GoledoToken));
   // console.log("MultiFeeDistribution claimableRewards()", await multiFeeDistribution.claimableRewards("0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
-  // console.log("MultiFeeDistribution unlockedBalance()", await multiFeeDistribution.unlockedBalance("0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
-  // console.log("MultiFeeDistribution lockedBalances()", await multiFeeDistribution.lockedBalances("0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
-  // console.log("MultiFeeDistribution withdrawableBalance()", await multiFeeDistribution.withdrawableBalance("0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
-  // console.log("MultiFeeDistribution earnedBalances()", await multiFeeDistribution.earnedBalances("0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
+  console.log("MultiFeeDistribution unlockedBalance()", await multiFeeDistribution.unlockedBalance("0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
+  console.log("MultiFeeDistribution lockedBalances()", await multiFeeDistribution.lockedBalances("0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
+  console.log("MultiFeeDistribution withdrawableBalance()", await multiFeeDistribution.withdrawableBalance("0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
+  console.log("MultiFeeDistribution earnedBalances()", await multiFeeDistribution.earnedBalances("0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
   // // // let tx = await multiFeeDistribution.getReward([addresses.GoledoToken]); await tx.wait();
   // // let goledoToken = await ethers.getContractAt("GoledoToken", addresses.GoledoToken, deployer);
   // // console.log("Found GoledoToken at:", goledoToken.address);
   // // console.log("goledoToken balanceOf()", await goledoToken.balanceOf("0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
   // // console.log("goledoToken balanceOf()", await goledoToken.balanceOf(multiFeeDistribution.address));
 
-  // let uiPoolDataProvider = await ethers.getContractAt("UiPoolDataProvider", addresses.UiPoolDataProvider, deployer);
+  let uiPoolDataProvider = await ethers.getContractAt("UiPoolDataProvider", addresses.UiPoolDataProvider, deployer);
   // // console.log("Found UiPoolDataProvider at:", uiPoolDataProvider.address);
   // // // console.log(await uiPoolDataProvider.getReservesData(addresses.LendingPoolAddressesProvider, "0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
   // // // console.log(await uiPoolDataProvider.getSimpleReservesData(addresses.LendingPoolAddressesProvider));
-  // lendingPool = await ethers.getContractAt("LendingPool", addresses.LendingPool, deployer);
+  lendingPool = await ethers.getContractAt("LendingPool", addresses.LendingPool, deployer);
   // console.log("Find LendingPool Proxy at:", lendingPool.address);
   // console.log(await lendingPool.getUserAccountData("0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
+  // console.log(await lendingPool.borrow(addresses.Markets['CFX']['token'], ethers.utils.parseEther("5690.360580838348012594"), 2, 0, "0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
+  // console.log(await lendingPool.borrow(addresses.Markets['WBTC']['token'], ethers.utils.parseEther("0.0154"), 2, 0, "0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
   // // console.log(await lendingPool.getReserveData(addresses.Markets['USDT']['token']));
-  // let atoken = await ethers.getContractAt("AToken", addresses.Markets['CFX']['atoken'], deployer);
-  // console.log("totalSupply", await atoken.totalSupply());
-  // console.log("totalSupply", await atoken.scaledTotalSupply());
-  // console.log("balanceOf", await atoken.balanceOf(addresses.Treasury));
+  let atoken = await ethers.getContractAt("AToken", addresses.Markets['CFX']['atoken'], deployer);
+  console.log("totalSupply", await atoken.totalSupply());
+  console.log("totalSupply", await atoken.scaledTotalSupply());
+  console.log("balanceOf", await atoken.balanceOf(addresses.Treasury));
   // console.log("RESERVE_TREASURY_ADDRESS", await atoken.RESERVE_TREASURY_ADDRESS());
   // let vtoken = await ethers.getContractAt("VariableDebtToken", addresses.Markets['CFX']['vtoken'], deployer);
   // console.log("vtotalSupply", await atoken.totalSupply());
@@ -820,10 +821,10 @@ async function main() {
   // console.log("multiFeeDistribution.totalSupply()", await multiFeeDistribution.totalSupply());
   // console.log("multiFeeDistribution.lockedSupply()", await multiFeeDistribution.lockedSupply());
   // console.log("multiFeeDistribution.rewardData()", await multiFeeDistribution.rewardData(addresses.GoledoToken));
-  // console.log("multiFeeDistribution.rewardData(addresses.Markets['CFX']['atoken'])", await multiFeeDistribution.rewardData(addresses.Markets['CFX']['atoken']));
+  console.log("multiFeeDistribution.rewardData(addresses.Markets['CFX']['atoken'])", await multiFeeDistribution.rewardData(addresses.Markets['CFX']['atoken']));
   // console.log("multiFeeDistribution.claimableRewards()", await multiFeeDistribution.claimableRewards(deployer.address));
   // console.log("multiFeeDistribution.rewardPerToken()", await multiFeeDistribution.rewardPerToken(addresses.GoledoToken));
-  // // console.log(await uiPoolDataProvider.getReservesData(addresses.LendingPoolAddressesProvider, "0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
+  // console.log(await uiPoolDataProvider.getReservesData(addresses.LendingPoolAddressesProvider, "0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
   // // console.log("multiFeeDistribution.getReward()", await multiFeeDistribution.getReward([addresses.GoledoToken, addresses.Markets['CFX']['atoken'], addresses.Markets['USDT']['atoken'], addresses.Markets['WETH']['atoken'],addresses.Markets['WBTC']['atoken']]));
   const chefIncentivesControllerContract = await ethers.getContractAt(
     "ChefIncentivesController",
@@ -831,9 +832,44 @@ async function main() {
     deployer
   );
   console.log("chefIncentivesControllerContract.emissionSchedule(0)", await chefIncentivesControllerContract.emissionSchedule(0));
-  console.log("chefIncentivesControllerContract.emissionSchedule(58)", await chefIncentivesControllerContract.emissionSchedule(58));
+  // console.log("chefIncentivesControllerContract.emissionSchedule(58)", await chefIncentivesControllerContract.emissionSchedule(58));
   console.log("chefIncentivesControllerContract.rewardsPerSecond()", await chefIncentivesControllerContract.rewardsPerSecond());
   console.log("chefIncentivesControllerContract.mintedTokens()", await chefIncentivesControllerContract.mintedTokens());
+  const ONEMONTH = 10800; // 2628000; //TODO: change to 2628000 10800
+  const TIMEOFFSETBASE = 0;
+  const TOTALAMOUNTOFMONTHS = 5 * 12; // 5 years
+  const startTimeOffset: number[] = new Array(TOTALAMOUNTOFMONTHS);
+  const rewardsPerSecond: BigNumber[] = new Array(TOTALAMOUNTOFMONTHS);
+  const rewardsPerSecondForChefIncentivesController: BigNumber[] = new Array(TOTALAMOUNTOFMONTHS);
+  const rewardsPerSecondForMasterChef: BigNumber[] = new Array(TOTALAMOUNTOFMONTHS);
+  rewardsPerSecond[0] = ethers.utils.parseEther("50000000").div(ONEMONTH);
+  rewardsPerSecondForMasterChef[0] = rewardsPerSecond[0].div(3);
+  rewardsPerSecondForChefIncentivesController[0] = rewardsPerSecond[0].sub(rewardsPerSecond[0].div(3));
+  startTimeOffset[0] = TIMEOFFSETBASE;
+  console.log(
+    "set emission: ",
+    startTimeOffset[0],
+    rewardsPerSecondForMasterChef[0],
+    rewardsPerSecondForChefIncentivesController[0]
+  );
+  for (let i = 1; i < startTimeOffset.length; i++) {
+    startTimeOffset[i] = startTimeOffset[i - 1] + ONEMONTH;
+    rewardsPerSecond[i] = rewardsPerSecond[i - 1].div(10904).mul(10000);
+    rewardsPerSecondForMasterChef[i] = rewardsPerSecond[i].div(3);
+    rewardsPerSecondForChefIncentivesController[i] = rewardsPerSecond[i].sub(rewardsPerSecond[i].div(3));
+    console.log(
+      "set emission: ",
+      startTimeOffset[i],
+      rewardsPerSecondForMasterChef[i],
+      rewardsPerSecondForChefIncentivesController[i]
+    );
+  }
+  let totalAmount = BigNumber.from(0);
+  for (let i = 0; i < startTimeOffset.length; i++) {
+    totalAmount = totalAmount.add(rewardsPerSecondForMasterChef[i]).add(rewardsPerSecondForChefIncentivesController[i]);
+  }
+  totalAmount = totalAmount.mul(ONEMONTH);
+  console.log("total amount: ", totalAmount);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
