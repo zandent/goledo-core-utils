@@ -1,5 +1,5 @@
 /* eslint-disable node/no-missing-import */
-import { constants } from "ethers";
+import { BigNumber, constants } from "ethers";
 import { ethers, network } from "hardhat";
 import {
   AaveOracle,
@@ -18,7 +18,6 @@ import {
 } from "../typechain";
 import * as fs from 'fs';
 import assert from 'assert-ts';
-const { BigNumber } = require("ethers");
 const SwappiRouterJSON = require(`./SwappiRouter.sol/SwappiRouter.json`);
 const SwappiFactoryJSON = require(`./SwappiFactory.sol/SwappiFactory.json`);
 const ADDRESSES: {
@@ -534,7 +533,35 @@ async function main() {
   if (addresses.Treasury === "") {
     addresses.Treasury = addresses.MultiFeeDistribution;
   }
-
+  const ONEMONTH = 10800; // 2628000; //TODO: change to 2628000
+  const TIMEOFFSETBASE = 0;
+  const TOTALAMOUNTOFMONTHS = 5 * 12; // 5 years
+  const startTimeOffset: number[] = new Array(TOTALAMOUNTOFMONTHS);
+  const rewardsPerSecond: BigNumber[] = new Array(TOTALAMOUNTOFMONTHS);
+  const rewardsPerSecondForChefIncentivesController: BigNumber[] = new Array(TOTALAMOUNTOFMONTHS);
+  const rewardsPerSecondForMasterChef: BigNumber[] = new Array(TOTALAMOUNTOFMONTHS);
+  rewardsPerSecond[0] = ethers.utils.parseEther("50000000").div(ONEMONTH);
+  rewardsPerSecondForMasterChef[0] = rewardsPerSecond[0].div(3);
+  rewardsPerSecondForChefIncentivesController[0] = rewardsPerSecond[0].sub(rewardsPerSecond[0].div(3));
+  startTimeOffset[0] = TIMEOFFSETBASE;
+  // console.log(
+  //   "set emission: ",
+  //   startTimeOffset[0],
+  //   rewardsPerSecondForMasterChef[0],
+  //   rewardsPerSecondForChefIncentivesController[0]
+  // );
+  for (let i = 1; i < startTimeOffset.length; i++) {
+    startTimeOffset[i] = startTimeOffset[i - 1] + ONEMONTH;
+    rewardsPerSecond[i] = rewardsPerSecond[i - 1].div(10904).mul(10000);
+    rewardsPerSecondForMasterChef[i] = rewardsPerSecond[i].div(3);
+    rewardsPerSecondForChefIncentivesController[i] = rewardsPerSecond[i].sub(rewardsPerSecond[i].div(3));
+    // console.log(
+    //   "set emission: ",
+    //   startTimeOffset[i],
+    //   rewardsPerSecondForMasterChef[i],
+    //   rewardsPerSecondForChefIncentivesController[i]
+    // );
+  }
   if (addresses.ChefIncentivesController !== "") {
     chefIncentivesController = await ethers.getContractAt(
       "ChefIncentivesController",
@@ -545,8 +572,8 @@ async function main() {
   } else {
     const ChefIncentivesController = await ethers.getContractFactory("ChefIncentivesController", deployer);
     chefIncentivesController = await ChefIncentivesController.deploy(
-      [0],
-      [ethers.utils.parseEther("10")],
+      startTimeOffset,
+      rewardsPerSecondForChefIncentivesController,
       lendingPoolConfigurator.address,
       multiFeeDistribution.address,
       MAX_SUPPLY.mul(4).div(10)
@@ -573,8 +600,8 @@ async function main() {
   } else {
     const MasterChef = await ethers.getContractFactory("MasterChef", deployer);
     masterChef = await MasterChef.deploy(
-      [0],
-      [ethers.utils.parseEther("5")],
+      startTimeOffset,
+      rewardsPerSecondForMasterChef,
       lendingPoolConfigurator.address,
       multiFeeDistribution.address,
       MAX_SUPPLY.mul(2).div(10)
