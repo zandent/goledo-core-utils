@@ -533,7 +533,7 @@ async function main() {
   if (addresses.Treasury === "") {
     addresses.Treasury = addresses.MultiFeeDistribution;
   }
-  const ONEMONTH = 10800; // 2628000; //TODO: change to 2628000
+  const ONEMONTH = 86400; // 2628000; //TODO: change to 2628000
   const TIMEOFFSETBASE = 0;
   const TOTALAMOUNTOFMONTHS = 5 * 12; // 5 years
   const startTimeOffset: number[] = new Array(TOTALAMOUNTOFMONTHS);

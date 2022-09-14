@@ -336,8 +336,14 @@ contract MultiFeeDistribution is IMultiFeeDistribution, Ownable {
         if (earnedAmount == 0) continue;
         if (penaltyAmount == 0 && userEarnings[msg.sender][i].unlockTime > block.timestamp) {
           penaltyAmount = remaining;
-          require(bal.earned >= remaining, "Insufficient balance after penalty");
-          bal.earned = bal.earned.sub(remaining);
+          require(bal.earned >= remaining || remaining == bal.earned.add(1), "Insufficient balance after penalty");
+          if (remaining == bal.earned.add(1)) {
+            //Here to solve the corner case: penalty is always 1 less than the the other half
+            penaltyAmount = remaining.sub(1);
+            bal.earned = 0;
+          }else{
+            bal.earned = bal.earned.sub(remaining);
+          }
           if (bal.earned == 0) {
             delete userEarnings[msg.sender];
             break;
