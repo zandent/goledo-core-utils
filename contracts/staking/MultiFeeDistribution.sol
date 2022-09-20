@@ -55,7 +55,7 @@ contract MultiFeeDistribution is IMultiFeeDistribution, Ownable {
   mapping(address => Reward) public rewardData;
 
   // Duration that rewards are streamed over
-  uint256 public constant rewardsDuration = 100 * 7;
+  uint256 public constant rewardsDuration = 86400 * 7;
 
   // Duration of lock/earned penalty period
   uint256 public constant lockDuration = rewardsDuration * 13;
@@ -383,7 +383,7 @@ contract MultiFeeDistribution is IMultiFeeDistribution, Ownable {
         uint256 periodFinish = r.periodFinish;
         require(periodFinish > 0, "Unknown reward token");
         uint256 balance = r.balance;
-        if (periodFinish < block.timestamp.add(rewardsDuration - 100)) {
+        if (periodFinish < block.timestamp.add(rewardsDuration - 86400)) {
           uint256 unseen = IERC20(token).balanceOf(address(this)).sub(balance);
           if (unseen > 0) {
             _notifyReward(token, unseen);

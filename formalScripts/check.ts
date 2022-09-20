@@ -837,7 +837,7 @@ async function main() {
   console.log("MasterChef.mintedTokens()", await MasterChef.mintedTokens());
   console.log("chefIncentivesControllerContract.rewardsPerSecond()", await chefIncentivesControllerContract.rewardsPerSecond());
   console.log("chefIncentivesControllerContract.mintedTokens()", await chefIncentivesControllerContract.mintedTokens());
-  const ONEMONTH = 86400; // 2628000; //TODO: change to 2628000 10800
+  const ONEMONTH = 2628000; // 2628000; //TODO: change to 2628000 10800
   const TIMEOFFSETBASE = 0;
   const TOTALAMOUNTOFMONTHS = 5 * 12; // 5 years
   const startTimeOffset: number[] = new Array(TOTALAMOUNTOFMONTHS);
