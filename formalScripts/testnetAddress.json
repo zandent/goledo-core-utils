@@ -83,7 +83,8 @@
         "assetId": "0x538f5a25b39995a23c24037d2d38f979c8fa7b00d001e897212d936e6f6556ef",
         "decimals": 6,
         "timeout": 172800
-      }
+      },
+      "DefaultReserveInterestRateStrategy": "0x78313dCB05269661eED889393f4824dBd728fB63"
     }
   }
 }

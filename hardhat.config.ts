@@ -33,6 +33,12 @@ const config: HardhatUserConfig = {
       gasPrice: 10000000000,
       accounts: [process.env.PRIVATE_KEY as string],
     },
+    // ftm network is for testing geistTest.ts
+    ftm: {
+      url: "https://rpc.fantom.network",
+      gasPrice: 10000000000,
+      accounts: [process.env.PRIVATE_KEY as string],
+    },
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,

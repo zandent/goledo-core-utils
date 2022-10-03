@@ -201,7 +201,25 @@ const ADDRESSES: {
 
 const MAX_SUPPLY = ethers.utils.parseEther("1000000000");
 const GOLEDOVESTINGLOCKTIMESTAMP = 1664365001;
-
+const NEW_RATE_STRATEGY: {
+  [name: string]: {
+    optimalUtilizationRate: string;
+    baseVariableBorrowRate: string;
+    variableRateSlope1: string;
+    variableRateSlope2: string;
+    stableRateSlope1: string;
+    stableRateSlope2: string;
+  };
+} = {
+  USDT: {
+    optimalUtilizationRate: "900000000000000100000000000", // optimalUtilizationRate
+    baseVariableBorrowRate: "0", // baseVariableBorrowRate
+    variableRateSlope1: "40000000000000000000000000", // variableRateSlope1
+    variableRateSlope2: "600000000000000000000000000", // variableRateSlope2
+    stableRateSlope1: "0", // stableRateSlope1
+    stableRateSlope2: "0", // stableRateSlope2
+  },
+};
 let goledoToken: GoledoToken;
 let lendingPoolAddressesProviderRegistry: LendingPoolAddressesProviderRegistry;
 let lendingPoolAddressesProvider: LendingPoolAddressesProvider;
@@ -710,36 +728,34 @@ async function main() {
       console.log(">> ✅ Done");
     }
   }
-  // set mock usd oracle same as usdt oracle
-  const tx = await aaveOracle.setAssetSources(
-    ["0x000000000000000000000000000000000000dead"],
-    [addresses.Markets.USDT.oracle]
-  );
-  console.log(`>> SetAssetSources in AaveOracle for MOCK USD, hash:`, tx.hash);
-  await tx.wait();
-  console.log(">> ✅ Done");
-
-  await wethGateway.authorizeLendingPool(addresses.LendingPool);
-  await multiFeeDistribution.setMinters([addresses.MasterChef, addresses.ChefIncentivesController, deployer.address]);
-  // add gCFX, gUSDT, gWETH, gWBTC as reward
-  await multiFeeDistribution.addReward(addresses.Markets.CFX.atoken);
-  await multiFeeDistribution.addReward(addresses.Markets.USDT.atoken);
-  await multiFeeDistribution.addReward(addresses.Markets.WETH.atoken);
-  await multiFeeDistribution.addReward(addresses.Markets.WBTC.atoken);
-  // await multiFeeDistribution.mint(deployer.address, ethers.utils.parseEther("10000"), false);
-  await lendingPoolConfigurator.enableBorrowingOnReserve(addresses.Markets.CFX.token, true);
-  await lendingPoolConfigurator.enableBorrowingOnReserve(addresses.Markets.USDT.token, true);
-  await lendingPoolConfigurator.enableBorrowingOnReserve(addresses.Markets.WETH.token, true);
-  await lendingPoolConfigurator.enableBorrowingOnReserve(addresses.Markets.WBTC.token, true);
-  await lendingPoolConfigurator.configureReserveAsCollateral(addresses.Markets.CFX.token, 5000, 6500, 11000);
-  await masterChef.addPool(addresses.SwappiLP, 1);
-  await lendingPoolConfigurator.configureReserveAsCollateral(addresses.Markets.USDT.token, 8000, 8500, 10500);
-  await lendingPoolConfigurator.configureReserveAsCollateral(addresses.Markets.WETH.token, 8000, 8250, 10500);
-  await lendingPoolConfigurator.configureReserveAsCollateral(addresses.Markets.WBTC.token, 7000, 7500, 11000);
-  await lendingPoolConfigurator.setReserveFactor(addresses.Markets.CFX.token, 5000);
-  await lendingPoolConfigurator.setReserveFactor(addresses.Markets.USDT.token, 7500);
-  await lendingPoolConfigurator.setReserveFactor(addresses.Markets.WETH.token, 7500);
-  await lendingPoolConfigurator.setReserveFactor(addresses.Markets.WBTC.token, 7500);
+  for (let token in NEW_RATE_STRATEGY) {
+    let val = NEW_RATE_STRATEGY[token];
+    const DefaultReserveInterestRateStrategy = await ethers.getContractFactory(
+      "DefaultReserveInterestRateStrategy",
+      deployer
+    );
+    const defaultReserveInterestRateStrategy = await DefaultReserveInterestRateStrategy.deploy(
+      lendingPoolAddressesProvider.address,
+      val.optimalUtilizationRate,
+      val.baseVariableBorrowRate,
+      val.variableRateSlope1,
+      val.variableRateSlope2,
+      val.stableRateSlope1,
+      val.stableRateSlope2
+    );
+    await defaultReserveInterestRateStrategy.deployed();
+    console.log("Deploy", token, "DefaultReserveInterestRateStrategy at:", defaultReserveInterestRateStrategy.address);
+    const tx = await lendingPoolConfigurator.setReserveInterestRateStrategyAddress(
+      addresses.Markets[token].token,
+      defaultReserveInterestRateStrategy.address
+    );
+    console.log(`>> Setting ${token} Rate Strategy, hash:`, tx.hash);
+    await tx.wait();
+    console.log(">> ✅ Done");
+    addresses.Markets[token].DefaultReserveInterestRateStrategy = defaultReserveInterestRateStrategy.address;
+}
+  let data = JSON.stringify(addresses, null, 2);
+  fs.writeFileSync("formalScripts/" + network.name + "Address.json", data);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

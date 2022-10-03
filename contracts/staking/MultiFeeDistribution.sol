@@ -76,15 +76,20 @@ contract MultiFeeDistribution is IMultiFeeDistribution, Ownable {
   mapping(address => LockedBalance[]) private userLocks;
   mapping(address => LockedBalance[]) private userEarnings;
 
+  // the deadline of the lock for vested tokens
+  uint256 public vestingLockTimestamp;
+
   /* ========== CONSTRUCTOR ========== */
 
-  constructor(address _stakingToken) Ownable() {
+  constructor(address _stakingToken, uint256 _vestingLockTimestamp) Ownable() {
+    require((_vestingLockTimestamp - block.timestamp) < lockDuration, "Vesting lock time cannot exceed normal lock duration");
     stakingToken = IMintableToken(_stakingToken);
     IMintableToken(_stakingToken).setMinter(address(this));
     // First reward MUST be the staking token or things will break
     // related to the 50% penalty and distribution to locked balances
     rewardTokens.push(_stakingToken);
     rewardData[_stakingToken].lastUpdateTime = block.timestamp;
+    vestingLockTimestamp = _vestingLockTimestamp;
   }
 
   /* ========== ADMIN CONFIGURATION ========== */
@@ -327,6 +332,7 @@ contract MultiFeeDistribution is IMultiFeeDistribution, Ownable {
     if (amount <= bal.unlocked) {
       bal.unlocked = bal.unlocked.sub(amount);
     } else {
+      require(block.timestamp > vestingLockTimestamp, "Vested tokens must be claimed after the required lock timestamp");
       uint256 remaining = amount.sub(bal.unlocked);
       require(bal.earned >= remaining, "Insufficient unlocked balance");
       bal.unlocked = 0;
@@ -407,6 +413,7 @@ contract MultiFeeDistribution is IMultiFeeDistribution, Ownable {
 
   // Withdraw full unlocked balance and optionally claim pending rewards
   function exit(bool claimRewards) external {
+    require(userEarnings[msg.sender].length == 0 || block.timestamp > vestingLockTimestamp, "Vested token owner must exit after the required lock timestamp");
     _updateReward(msg.sender);
     (uint256 amount, uint256 penaltyAmount) = withdrawableBalance(msg.sender);
     delete userEarnings[msg.sender];

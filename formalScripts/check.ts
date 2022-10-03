@@ -199,8 +199,8 @@ const ADDRESSES: {
   },
 };
 
-const MAX_SUPPLY = ethers.utils.parseEther("1000000000");
-
+const MAX_SUPPLY = ethers.utils.parseEther("100000000");
+const GOLEDOVESTINGLOCKTIMESTAMP = 1664365001;
 let goledoToken: GoledoToken;
 let lendingPoolAddressesProviderRegistry: LendingPoolAddressesProviderRegistry;
 let lendingPoolAddressesProvider: LendingPoolAddressesProvider;
@@ -531,7 +531,7 @@ async function main() {
     console.log("Found MultiFeeDistribution at:", multiFeeDistribution.address);
   } else {
     const MultiFeeDistribution = await ethers.getContractFactory("MultiFeeDistribution", deployer);
-    multiFeeDistribution = await MultiFeeDistribution.deploy(goledoToken.address);
+    multiFeeDistribution = await MultiFeeDistribution.deploy(goledoToken.address, GOLEDOVESTINGLOCKTIMESTAMP);
     await multiFeeDistribution.deployed();
     addresses.MultiFeeDistribution = multiFeeDistribution.address;
     console.log("Deploy MultiFeeDistribution at:", multiFeeDistribution.address);
@@ -652,32 +652,6 @@ async function main() {
     console.log("Deploy VariableDebtToken Impl at:", impl.address);
   }
 
-  if (addresses.DefaultReserveInterestRateStrategy !== "") {
-    const defaultReserveInterestRateStrategy = await ethers.getContractAt(
-      "DefaultReserveInterestRateStrategy",
-      addresses.DefaultReserveInterestRateStrategy,
-      deployer
-    );
-    console.log("Found DefaultReserveInterestRateStrategy at:", defaultReserveInterestRateStrategy.address);
-  } else {
-    const DefaultReserveInterestRateStrategy = await ethers.getContractFactory(
-      "DefaultReserveInterestRateStrategy",
-      deployer
-    );
-    const defaultReserveInterestRateStrategy = await DefaultReserveInterestRateStrategy.deploy(
-      lendingPoolAddressesProvider.address,
-      "450000000000000050000000000", // optimalUtilizationRate
-      "0", // baseVariableBorrowRate
-      "70000000000000010000000000", // variableRateSlope1
-      "3000000000000000000000000000", // variableRateSlope2
-      "0", // stableRateSlope1
-      "0" // stableRateSlope2
-    );
-    await defaultReserveInterestRateStrategy.deployed();
-    addresses.DefaultReserveInterestRateStrategy = defaultReserveInterestRateStrategy.address;
-    console.log("Deploy DefaultReserveInterestRateStrategy at:", defaultReserveInterestRateStrategy.address);
-  }
-
   for (const token of ["CFX", "USDT", "WETH", "WBTC"]) {
     const market = addresses.Markets[token];
     if (market.atoken === "") {
@@ -687,7 +661,7 @@ async function main() {
           stableDebtTokenImpl: addresses.StableDebtTokenImpl!,
           variableDebtTokenImpl: addresses.VariableDebtTokenImpl!,
           underlyingAssetDecimals: market.decimals,
-          interestRateStrategyAddress: addresses.DefaultReserveInterestRateStrategy!,
+          interestRateStrategyAddress: market.DefaultReserveInterestRateStrategy!,
           underlyingAsset: market.token,
           treasury: addresses.Treasury,
           incentivesController: chefIncentivesController.address,
@@ -763,15 +737,17 @@ async function main() {
 
   let uiPoolDataProvider = await ethers.getContractAt("UiPoolDataProvider", addresses.UiPoolDataProvider, deployer);
   // // console.log("Found UiPoolDataProvider at:", uiPoolDataProvider.address);
-  // // // console.log(await uiPoolDataProvider.getReservesData(addresses.LendingPoolAddressesProvider, "0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
-  // // // console.log(await uiPoolDataProvider.getSimpleReservesData(addresses.LendingPoolAddressesProvider));
+  console.log("uiPoolDataProvider.getUserReservesData ",await uiPoolDataProvider.getUserReservesData(addresses.LendingPoolAddressesProvider, "0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
+  console.log("uiPoolDataProvider.getSimpleReservesData ",await uiPoolDataProvider.getSimpleReservesData(addresses.LendingPoolAddressesProvider));
   lendingPool = await ethers.getContractAt("LendingPool", addresses.LendingPool, deployer);
   // console.log("Find LendingPool Proxy at:", lendingPool.address);
-  console.log(await lendingPool.getUserAccountData("0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
+  // console.log(await lendingPool.getUserAccountData("0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
+  // let tx = await lendingPool.withdraw(addresses.Markets['CFX']['token'], ethers.utils.parseEther("1000"), "0xad085e56f5673fd994453bbcdfe6828aa659cb0d"); await tx.wait();
   // // console.log(await lendingPool.borrow(addresses.Markets['CFX']['token'], ethers.utils.parseEther("5690.360580838348012594"), 2, 0, "0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
   // // console.log(await lendingPool.borrow(addresses.Markets['WBTC']['token'], ethers.utils.parseEther("0.0154"), 2, 0, "0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
   // // // console.log(await lendingPool.getReserveData(addresses.Markets['USDT']['token']));
-  // let atoken = await ethers.getContractAt("AToken", addresses.Markets['CFX']['atoken'], deployer);
+  let atoken = await ethers.getContractAt("AToken", addresses.Markets['CFX']['atoken'], deployer);
+  console.log("atoken.allowance()", await atoken.allowance("0xad085e56f5673fd994453bbcdfe6828aa659cb0d", addresses.WETHGateway));
   // console.log("totalSupply", await atoken.totalSupply());
   // console.log("totalSupply", await atoken.scaledTotalSupply());
   // console.log("balanceOf", await atoken.balanceOf(addresses.Treasury));
@@ -802,22 +778,22 @@ async function main() {
   // // // console.log("reward rate = ", rate);
   // // // console.log("multiFeeDistribution.lockedSupply()", await multiFeeDistribution.lockedSupply());
   let MasterChef = await ethers.getContractAt("MasterChef", addresses.MasterChef, deployer);
-  // // // var oldRewards = await MasterChef.claimableReward("0xad085e56f5673fd994453bbcdfe6828aa659cb0d",[addresses.SwappiLP]);
-  // // // console.log("MasterChef claimableRewards()", oldRewards[0]);
-  // // // var blockNumBefore = await ethers.provider.getBlockNumber();
-  // // // var blockBefore = await ethers.provider.getBlock(blockNumBefore);
-  // // // var timestampBefore = blockBefore.timestamp;
-  // // // console.log("timestamp is", timestampBefore);
-  // // // await new Promise(r => setTimeout(r, 5000));
-  // // // var newRewards = await MasterChef.claimableReward("0xad085e56f5673fd994453bbcdfe6828aa659cb0d",[addresses.SwappiLP]);
-  // // // console.log("MasterChef claimableRewards()", newRewards);
-  // // // var blockNumAfter = await ethers.provider.getBlockNumber();
-  // // // var blockAfter = await ethers.provider.getBlock(blockNumAfter);
-  // // // var timestampAfter = blockAfter.timestamp;
-  // // // console.log("timestamp is", timestampAfter);
-  // // // let rate = (BigNumber.from(newRewards[0]).sub(BigNumber.from(oldRewards[0]))).div(timestampAfter - timestampBefore);
-  // // // console.log("reward rate = ", rate);
-  // // // console.log("rewardrate in contract", await MasterChef.rewardsPerSecond());
+  var oldRewards = await MasterChef.claimableReward("0xad085e56f5673fd994453bbcdfe6828aa659cb0d",[addresses.SwappiLP]);
+  console.log("MasterChef claimableRewards()", oldRewards[0]);
+  var blockNumBefore = await ethers.provider.getBlockNumber();
+  var blockBefore = await ethers.provider.getBlock(blockNumBefore);
+  var timestampBefore = blockBefore.timestamp;
+  console.log("timestamp is", timestampBefore);
+  await new Promise(r => setTimeout(r, 5000));
+  var newRewards = await MasterChef.claimableReward("0xad085e56f5673fd994453bbcdfe6828aa659cb0d",[addresses.SwappiLP]);
+  console.log("MasterChef claimableRewards()", newRewards);
+  var blockNumAfter = await ethers.provider.getBlockNumber();
+  var blockAfter = await ethers.provider.getBlock(blockNumAfter);
+  var timestampAfter = blockAfter.timestamp;
+  console.log("timestamp is", timestampAfter);
+  let rate = (BigNumber.from(newRewards[0]).sub(BigNumber.from(oldRewards[0]))).div(timestampAfter - timestampBefore);
+  console.log("reward rate = ", rate);
+  console.log("rewardrate in contract", await MasterChef.rewardsPerSecond());
   // // console.log("multiFeeDistribution.totalSupply()", await multiFeeDistribution.totalSupply());
   // // console.log("multiFeeDistribution.lockedSupply()", await multiFeeDistribution.lockedSupply());
   // // console.log("multiFeeDistribution.rewardData()", await multiFeeDistribution.rewardData(addresses.GoledoToken));
@@ -839,14 +815,64 @@ async function main() {
   console.log("chefIncentivesControllerContract.mintedTokens()", await chefIncentivesControllerContract.mintedTokens());
   const ONEMONTH = 2628000; // 2628000; //TODO: change to 2628000 10800
   const TIMEOFFSETBASE = 0;
-  const TOTALAMOUNTOFMONTHS = 5 * 12; // 5 years
+  const TOTALAMOUNTOFMONTHS = 4 * 12; // 5 years
   const startTimeOffset: number[] = new Array(TOTALAMOUNTOFMONTHS);
   const rewardsPerSecond: BigNumber[] = new Array(TOTALAMOUNTOFMONTHS);
+  const rawRewardsPerSecond: number[] = new Array(
+    505319149,
+    463425485,
+    425005030,
+    389769837,
+    357455830,
+    327820827,
+    300642725,
+    275717833,
+    252859348,
+    231895954,
+    212670537,
+    195039010,
+    178869232,
+    164040015,
+    150440219,
+    137967919,
+    126529640,
+    116039655,
+    106419346,
+    97596612,
+    89505330,
+    82084859,
+    75279585,
+    69038504,
+    63314842,
+    58065703,
+    53251745,
+    48836890,
+    44788050,
+    41074881,
+    37669553,
+    34546546,
+    31682452,
+    29055807,
+    26646925,
+    24437752,
+    22411732,
+    20553679,
+    18849669,
+    17286930,
+    15853751,
+    14539390,
+    13333997,
+    12228537,
+    11214726,
+    10284965,
+    9432287,
+    9206710
+    );
   const rewardsPerSecondForChefIncentivesController: BigNumber[] = new Array(TOTALAMOUNTOFMONTHS);
   const rewardsPerSecondForMasterChef: BigNumber[] = new Array(TOTALAMOUNTOFMONTHS);
-  rewardsPerSecond[0] = ethers.utils.parseEther("50000000").div(ONEMONTH);
-  rewardsPerSecondForMasterChef[0] = rewardsPerSecond[0].div(3);
-  rewardsPerSecondForChefIncentivesController[0] = rewardsPerSecond[0].sub(rewardsPerSecond[0].div(3));
+  rewardsPerSecond[0] = BigNumber.from(rawRewardsPerSecond[0]).mul(ethers.utils.parseEther("1")).div(ONEMONTH);
+  rewardsPerSecondForMasterChef[0] = rewardsPerSecond[0].div(2);
+  rewardsPerSecondForChefIncentivesController[0] = rewardsPerSecond[0].sub(rewardsPerSecond[0].div(2));
   startTimeOffset[0] = TIMEOFFSETBASE;
   console.log(
     "set emission: ",
@@ -856,9 +882,9 @@ async function main() {
   );
   for (let i = 1; i < startTimeOffset.length; i++) {
     startTimeOffset[i] = startTimeOffset[i - 1] + ONEMONTH;
-    rewardsPerSecond[i] = rewardsPerSecond[i - 1].div(10904).mul(10000);
-    rewardsPerSecondForMasterChef[i] = rewardsPerSecond[i].div(3);
-    rewardsPerSecondForChefIncentivesController[i] = rewardsPerSecond[i].sub(rewardsPerSecond[i].div(3));
+    rewardsPerSecond[i] = BigNumber.from(rawRewardsPerSecond[i]).mul(ethers.utils.parseEther("1")).div(ONEMONTH);
+    rewardsPerSecondForMasterChef[i] = rewardsPerSecond[i].div(2);
+    rewardsPerSecondForChefIncentivesController[i] = rewardsPerSecond[i].sub(rewardsPerSecond[i].div(2));
     console.log(
       "set emission: ",
       startTimeOffset[i],

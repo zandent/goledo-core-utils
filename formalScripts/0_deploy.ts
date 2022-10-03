@@ -53,7 +53,6 @@ const ADDRESSES: {
     ATokenImpl: string;
     StableDebtTokenImpl: string;
     VariableDebtTokenImpl: string;
-    DefaultReserveInterestRateStrategy: string;
     SwappiLP: string;
     Markets: {
       [name: string]: {
@@ -63,6 +62,7 @@ const ADDRESSES: {
         vtoken: string;
         stoken: string;
         oracle: string;
+        DefaultReserveInterestRateStrategy: string;
         witnetConfig: {
           assetId: string;
           decimals: number;
@@ -104,7 +104,6 @@ const ADDRESSES: {
     ATokenImpl: "",
     StableDebtTokenImpl: "",
     VariableDebtTokenImpl: "",
-    DefaultReserveInterestRateStrategy: "",
     SwappiLP: "",
     Markets: {
       CFX: {
@@ -114,6 +113,7 @@ const ADDRESSES: {
         stoken: "",
         vtoken: "",
         oracle: "",
+        DefaultReserveInterestRateStrategy: "",
         witnetConfig: {
           assetId: "0x65784185a07d3add5e7a99a6ddd4477e3c8caad717bac3ba3c3361d99a978c29",
           decimals: 6,
@@ -127,6 +127,7 @@ const ADDRESSES: {
         stoken: "",
         vtoken: "",
         oracle: "",
+        DefaultReserveInterestRateStrategy: "",
         witnetConfig: {
           assetId: "0x3d15f7018db5cc80838b684361aaa100bfadf8a11e02d5c1c92e9c6af47626c8",
           decimals: 6,
@@ -140,6 +141,7 @@ const ADDRESSES: {
         stoken: "",
         vtoken: "",
         oracle: "",
+        DefaultReserveInterestRateStrategy: "",
         witnetConfig: {
           assetId: "0x24beead43216e490aa240ef0d32e18c57beea168f06eabb94f5193868d500946",
           decimals: 6,
@@ -153,6 +155,7 @@ const ADDRESSES: {
         stoken: "",
         vtoken: "",
         oracle: "",
+        DefaultReserveInterestRateStrategy: "",
         witnetConfig: {
           assetId: "0x538f5a25b39995a23c24037d2d38f979c8fa7b00d001e897212d936e6f6556ef",
           decimals: 6,
@@ -193,13 +196,55 @@ const ADDRESSES: {
     ATokenImpl: "",
     StableDebtTokenImpl: "",
     VariableDebtTokenImpl: "",
-    DefaultReserveInterestRateStrategy: "",
     SwappiLP: "",
     Markets: {},
   },
 };
-
+const RATE_STRATEGY: {
+  [name: string]: {
+    optimalUtilizationRate: string;
+    baseVariableBorrowRate: string;
+    variableRateSlope1: string;
+    variableRateSlope2: string;
+    stableRateSlope1: string;
+    stableRateSlope2: string;
+  };
+} = {
+  CFX: {
+    optimalUtilizationRate: "450000000000000050000000000", // optimalUtilizationRate
+    baseVariableBorrowRate: "0", // baseVariableBorrowRate
+    variableRateSlope1: "70000000000000010000000000", // variableRateSlope1
+    variableRateSlope2: "3000000000000000000000000000", // variableRateSlope2
+    stableRateSlope1: "0", // stableRateSlope1
+    stableRateSlope2: "0", // stableRateSlope2
+  },
+  WETH: {
+    optimalUtilizationRate: "650000000000000000000000000", // optimalUtilizationRate
+    baseVariableBorrowRate: "0", // baseVariableBorrowRate
+    variableRateSlope1: "80000000000000000000000000", // variableRateSlope1
+    variableRateSlope2: "1000000000000000000000000000", // variableRateSlope2
+    stableRateSlope1: "0", // stableRateSlope1
+    stableRateSlope2: "0", // stableRateSlope2
+  },
+  WBTC: {
+    optimalUtilizationRate: "650000000000000000000000000", // optimalUtilizationRate
+    baseVariableBorrowRate: "0", // baseVariableBorrowRate
+    variableRateSlope1: "80000000000000000000000000", // variableRateSlope1
+    variableRateSlope2: "3000000000000000000000000000", // variableRateSlope2
+    stableRateSlope1: "0", // stableRateSlope1
+    stableRateSlope2: "0", // stableRateSlope2
+  },
+  USDT: {
+    optimalUtilizationRate: "900000000000000100000000000", // optimalUtilizationRate
+    baseVariableBorrowRate: "0", // baseVariableBorrowRate
+    variableRateSlope1: "40000000000000000000000000", // variableRateSlope1
+    variableRateSlope2: "600000000000000000000000000", // variableRateSlope2
+    stableRateSlope1: "0", // stableRateSlope1
+    stableRateSlope2: "0", // stableRateSlope2
+  },
+};
 const MAX_SUPPLY = ethers.utils.parseEther("1000000000");
+const GOLEDOVESTINGLOCKTIMESTAMP = 1665419741;
 
 let goledoToken: GoledoToken;
 let lendingPoolAddressesProviderRegistry: LendingPoolAddressesProviderRegistry;
@@ -525,7 +570,7 @@ async function main() {
     console.log("Found MultiFeeDistribution at:", multiFeeDistribution.address);
   } else {
     const MultiFeeDistribution = await ethers.getContractFactory("MultiFeeDistribution", deployer);
-    multiFeeDistribution = await MultiFeeDistribution.deploy(goledoToken.address);
+    multiFeeDistribution = await MultiFeeDistribution.deploy(goledoToken.address, GOLEDOVESTINGLOCKTIMESTAMP);
     await multiFeeDistribution.deployed();
     addresses.MultiFeeDistribution = multiFeeDistribution.address;
     console.log("Deploy MultiFeeDistribution at:", multiFeeDistribution.address);
@@ -533,35 +578,91 @@ async function main() {
   if (addresses.Treasury === "") {
     addresses.Treasury = addresses.MultiFeeDistribution;
   }
-  const ONEMONTH = 2628000; // 2628000; //TODO: change to 2628000
+  const ONEMONTH = 2628000; // 2628000; //TODO: change to 2628000 10800
   const TIMEOFFSETBASE = 0;
-  const TOTALAMOUNTOFMONTHS = 5 * 12; // 5 years
+  const TOTALAMOUNTOFMONTHS = 4 * 12; // 5 years
   const startTimeOffset: number[] = new Array(TOTALAMOUNTOFMONTHS);
   const rewardsPerSecond: BigNumber[] = new Array(TOTALAMOUNTOFMONTHS);
+  const rawRewardsPerSecond: number[] = new Array(
+    505319149,
+    463425485,
+    425005030,
+    389769837,
+    357455830,
+    327820827,
+    300642725,
+    275717833,
+    252859348,
+    231895954,
+    212670537,
+    195039010,
+    178869232,
+    164040015,
+    150440219,
+    137967919,
+    126529640,
+    116039655,
+    106419346,
+    97596612,
+    89505330,
+    82084859,
+    75279585,
+    69038504,
+    63314842,
+    58065703,
+    53251745,
+    48836890,
+    44788050,
+    41074881,
+    37669553,
+    34546546,
+    31682452,
+    29055807,
+    26646925,
+    24437752,
+    22411732,
+    20553679,
+    18849669,
+    17286930,
+    15853751,
+    14539390,
+    13333997,
+    12228537,
+    11214726,
+    10284965,
+    9432287,
+    9206710
+    );
   const rewardsPerSecondForChefIncentivesController: BigNumber[] = new Array(TOTALAMOUNTOFMONTHS);
   const rewardsPerSecondForMasterChef: BigNumber[] = new Array(TOTALAMOUNTOFMONTHS);
-  rewardsPerSecond[0] = ethers.utils.parseEther("50000000").div(ONEMONTH);
-  rewardsPerSecondForMasterChef[0] = rewardsPerSecond[0].div(3);
-  rewardsPerSecondForChefIncentivesController[0] = rewardsPerSecond[0].sub(rewardsPerSecond[0].div(3));
+  rewardsPerSecond[0] = BigNumber.from(rawRewardsPerSecond[0]).mul(ethers.utils.parseEther("1")).div(ONEMONTH);
+  rewardsPerSecondForMasterChef[0] = rewardsPerSecond[0].div(2);
+  rewardsPerSecondForChefIncentivesController[0] = rewardsPerSecond[0].sub(rewardsPerSecond[0].div(2));
   startTimeOffset[0] = TIMEOFFSETBASE;
-  // console.log(
-  //   "set emission: ",
-  //   startTimeOffset[0],
-  //   rewardsPerSecondForMasterChef[0],
-  //   rewardsPerSecondForChefIncentivesController[0]
-  // );
+  console.log(
+    "set emission: ",
+    startTimeOffset[0],
+    rewardsPerSecondForMasterChef[0],
+    rewardsPerSecondForChefIncentivesController[0]
+  );
   for (let i = 1; i < startTimeOffset.length; i++) {
     startTimeOffset[i] = startTimeOffset[i - 1] + ONEMONTH;
-    rewardsPerSecond[i] = rewardsPerSecond[i - 1].div(10904).mul(10000);
-    rewardsPerSecondForMasterChef[i] = rewardsPerSecond[i].div(3);
-    rewardsPerSecondForChefIncentivesController[i] = rewardsPerSecond[i].sub(rewardsPerSecond[i].div(3));
-    // console.log(
-    //   "set emission: ",
-    //   startTimeOffset[i],
-    //   rewardsPerSecondForMasterChef[i],
-    //   rewardsPerSecondForChefIncentivesController[i]
-    // );
+    rewardsPerSecond[i] = BigNumber.from(rawRewardsPerSecond[i]).mul(ethers.utils.parseEther("1")).div(ONEMONTH);
+    rewardsPerSecondForMasterChef[i] = rewardsPerSecond[i].div(2);
+    rewardsPerSecondForChefIncentivesController[i] = rewardsPerSecond[i].sub(rewardsPerSecond[i].div(2));
+    console.log(
+      "set emission: ",
+      startTimeOffset[i],
+      rewardsPerSecondForMasterChef[i],
+      rewardsPerSecondForChefIncentivesController[i]
+    );
   }
+  let totalAmount = BigNumber.from(0);
+  for (let i = 0; i < startTimeOffset.length; i++) {
+    totalAmount = totalAmount.add(rewardsPerSecondForMasterChef[i]).add(rewardsPerSecondForChefIncentivesController[i]);
+  }
+  totalAmount = totalAmount.mul(ONEMONTH);
+  console.log("total amount: ", totalAmount);
   if (addresses.ChefIncentivesController !== "") {
     chefIncentivesController = await ethers.getContractAt(
       "ChefIncentivesController",
@@ -677,42 +778,46 @@ async function main() {
     console.log("Deploy VariableDebtToken Impl at:", impl.address);
   }
 
-  if (addresses.DefaultReserveInterestRateStrategy !== "") {
-    const defaultReserveInterestRateStrategy = await ethers.getContractAt(
-      "DefaultReserveInterestRateStrategy",
-      addresses.DefaultReserveInterestRateStrategy,
-      deployer
-    );
-    console.log("Found DefaultReserveInterestRateStrategy at:", defaultReserveInterestRateStrategy.address);
-  } else {
-    const DefaultReserveInterestRateStrategy = await ethers.getContractFactory(
-      "DefaultReserveInterestRateStrategy",
-      deployer
-    );
-    const defaultReserveInterestRateStrategy = await DefaultReserveInterestRateStrategy.deploy(
-      lendingPoolAddressesProvider.address,
-      "450000000000000050000000000", // optimalUtilizationRate
-      "0", // baseVariableBorrowRate
-      "70000000000000010000000000", // variableRateSlope1
-      "3000000000000000000000000000", // variableRateSlope2
-      "0", // stableRateSlope1
-      "0" // stableRateSlope2
-    );
-    await defaultReserveInterestRateStrategy.deployed();
-    addresses.DefaultReserveInterestRateStrategy = defaultReserveInterestRateStrategy.address;
-    console.log("Deploy DefaultReserveInterestRateStrategy at:", defaultReserveInterestRateStrategy.address);
-  }
-
   for (const token of ["CFX", "USDT", "WETH", "WBTC"]) {
     const market = addresses.Markets[token];
     if (market.atoken === "") {
+      if (market.DefaultReserveInterestRateStrategy !== ""){
+        const defaultReserveInterestRateStrategy = await ethers.getContractAt(
+          "DefaultReserveInterestRateStrategy",
+          market.DefaultReserveInterestRateStrategy,
+          deployer
+        );
+        console.log("Found DefaultReserveInterestRateStrategy at:", defaultReserveInterestRateStrategy.address);
+      } else {
+        const DefaultReserveInterestRateStrategy = await ethers.getContractFactory(
+          "DefaultReserveInterestRateStrategy",
+          deployer
+        );
+        const defaultReserveInterestRateStrategy = await DefaultReserveInterestRateStrategy.deploy(
+          lendingPoolAddressesProvider.address,
+          RATE_STRATEGY[token].optimalUtilizationRate,
+          RATE_STRATEGY[token].baseVariableBorrowRate,
+          RATE_STRATEGY[token].variableRateSlope1,
+          RATE_STRATEGY[token].variableRateSlope2,
+          RATE_STRATEGY[token].stableRateSlope1,
+          RATE_STRATEGY[token].stableRateSlope2
+        );
+        await defaultReserveInterestRateStrategy.deployed();
+        market.DefaultReserveInterestRateStrategy = defaultReserveInterestRateStrategy.address;
+        console.log(
+          "Deploy",
+          token,
+          "DefaultReserveInterestRateStrategy at:",
+          defaultReserveInterestRateStrategy.address
+        );
+      }
       const tx = await lendingPoolConfigurator.batchInitReserve([
         {
           aTokenImpl: addresses.ATokenImpl!,
           stableDebtTokenImpl: addresses.StableDebtTokenImpl!,
           variableDebtTokenImpl: addresses.VariableDebtTokenImpl!,
           underlyingAssetDecimals: market.decimals,
-          interestRateStrategyAddress: addresses.DefaultReserveInterestRateStrategy!,
+          interestRateStrategyAddress: market.DefaultReserveInterestRateStrategy!,
           underlyingAsset: market.token,
           treasury: addresses.Treasury,
           incentivesController: chefIncentivesController.address,
