@@ -211,6 +211,30 @@ const NEW_RATE_STRATEGY: {
     stableRateSlope2: string;
   };
 } = {
+  CFX: {
+    optimalUtilizationRate: "450000000000000050000000000", // optimalUtilizationRate
+    baseVariableBorrowRate: "0", // baseVariableBorrowRate
+    variableRateSlope1: "70000000000000010000000000", // variableRateSlope1
+    variableRateSlope2: "3000000000000000000000000000", // variableRateSlope2
+    stableRateSlope1: "0", // stableRateSlope1
+    stableRateSlope2: "0", // stableRateSlope2
+  },
+  WETH: {
+    optimalUtilizationRate: "650000000000000000000000000", // optimalUtilizationRate
+    baseVariableBorrowRate: "0", // baseVariableBorrowRate
+    variableRateSlope1: "80000000000000000000000000", // variableRateSlope1
+    variableRateSlope2: "1000000000000000000000000000", // variableRateSlope2
+    stableRateSlope1: "0", // stableRateSlope1
+    stableRateSlope2: "0", // stableRateSlope2
+  },
+  WBTC: {
+    optimalUtilizationRate: "650000000000000000000000000", // optimalUtilizationRate
+    baseVariableBorrowRate: "0", // baseVariableBorrowRate
+    variableRateSlope1: "80000000000000000000000000", // variableRateSlope1
+    variableRateSlope2: "3000000000000000000000000000", // variableRateSlope2
+    stableRateSlope1: "0", // stableRateSlope1
+    stableRateSlope2: "0", // stableRateSlope2
+  },
   USDT: {
     optimalUtilizationRate: "900000000000000100000000000", // optimalUtilizationRate
     baseVariableBorrowRate: "0", // baseVariableBorrowRate

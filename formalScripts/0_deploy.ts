@@ -244,7 +244,7 @@ const RATE_STRATEGY: {
   },
 };
 const MAX_SUPPLY = ethers.utils.parseEther("1000000000");
-const GOLEDOVESTINGLOCKTIMESTAMP = 1665419741;
+const GOLEDOVESTINGLOCKTIMESTAMP = 1665457200;
 
 let goledoToken: GoledoToken;
 let lendingPoolAddressesProviderRegistry: LendingPoolAddressesProviderRegistry;
@@ -342,12 +342,16 @@ async function main() {
   if (addresses.SwappiFactory !== "") {
     const SwappiFactory = new ethers.Contract(addresses.SwappiFactory, SwappiFactoryJSON.abi, deployer);
     console.log("Found SwappiFactory at:", SwappiFactory.address);
-    const tx = await SwappiFactory.createPair(goledoToken.address, addresses.WCFX);
-    console.log(">> createPair in SwappiFactory, hash:", tx.hash);
-    await tx.wait();
-    console.log(">> ✅ Done");
-    addresses.SwappiLP = await SwappiFactory.getPair(goledoToken.address, addresses.WCFX);
-    console.log("Deploy SwappiLP at:", addresses.SwappiLP);
+    if (addresses.SwappiLP === "") {
+      const tx = await SwappiFactory.createPair(goledoToken.address, addresses.WCFX);
+      console.log(">> createPair in SwappiFactory, hash:", tx.hash);
+      await tx.wait();
+      console.log(">> ✅ Done");
+      addresses.SwappiLP = await SwappiFactory.getPair(goledoToken.address, addresses.WCFX);
+      console.log("Deploy SwappiLP at:", addresses.SwappiLP);
+    } else {
+      console.log("Found SwappiLP at:", addresses.SwappiLP);
+    }
   } else {
     assert(false);
   }
@@ -677,7 +681,7 @@ async function main() {
       rewardsPerSecondForChefIncentivesController,
       lendingPoolConfigurator.address,
       multiFeeDistribution.address,
-      MAX_SUPPLY.mul(4).div(10)
+      MAX_SUPPLY.mul(3).div(10)
     );
     await chefIncentivesController.deployed();
     addresses.ChefIncentivesController = chefIncentivesController.address;
@@ -705,7 +709,7 @@ async function main() {
       rewardsPerSecondForMasterChef,
       lendingPoolConfigurator.address,
       multiFeeDistribution.address,
-      MAX_SUPPLY.mul(2).div(10)
+      MAX_SUPPLY.mul(3).div(10)
     );
     await masterChef.deployed();
     addresses.MasterChef = masterChef.address;
@@ -867,17 +871,6 @@ async function main() {
   }
   let data = JSON.stringify(addresses, null, 2);
   fs.writeFileSync("formalScripts/" + network.name + "Address.json", data);
-//   await wethGateway.authorizeLendingPool(addresses.LendingPool);
-//   // await multiFeeDistribution.mint(deployer.address, ethers.utils.parseEther("100"), false);
-//   await multiFeeDistribution.setMinters([addresses.MasterChef, addresses.ChefIncentivesController, deployer.address]);
-
-//   await lendingPoolConfigurator.enableBorrowingOnReserve(addresses.Markets.CFX.token, true);
-//   await lendingPoolConfigurator.enableBorrowingOnReserve(addresses.Markets.USDT.token, true);
-//   await lendingPoolConfigurator.enableBorrowingOnReserve(addresses.Markets.WETH.token, true);
-//   await lendingPoolConfigurator.enableBorrowingOnReserve(addresses.Markets.WBTC.token, true);
-//   await lendingPoolConfigurator.configureReserveAsCollateral(addresses.Markets.CFX.token, 5000, 6500, 11000);
-//   await masterChef.addPool(addresses.SwappiLP, 1);
-//   await lendingPoolConfigurator.configureReserveAsCollateral(addresses.Markets.USDT.token, 8000, 8500, 10500);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
