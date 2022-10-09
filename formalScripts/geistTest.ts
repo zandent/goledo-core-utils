@@ -219,12 +219,17 @@ async function main() {
   const [deployer] = await ethers.getSigners();
   
 
-  let uiPoolDataProvider = await ethers.getContractAt("LendingPool", "0x9FAD24f572045c7869117160A571B2e50b10d068", deployer);
-  // // console.log("Found UiPoolDataProvider at:", uiPoolDataProvider.address);
-  // console.log("uiPoolDataProvider.getUserReservesData ",await uiPoolDataProvider.getUserReservesData(addresses.LendingPoolAddressesProvider, "0xad085e56f5673fd994453bbcdfe6828aa659cb0d"));
-  console.log("WETH ",await uiPoolDataProvider.getReserveData("0x74b23882a30290451A17c44f4F05243b6b58C76d"));
+  let LendingPool = await ethers.getContractAt("LendingPool", "0x9FAD24f572045c7869117160A571B2e50b10d068", deployer);
+  console.log("WETH getReserveData",await LendingPool.getReserveData("0x74b23882a30290451A17c44f4F05243b6b58C76d"));
   
-  console.log("WBTC ",await uiPoolDataProvider.getReserveData("0x321162Cd933E2Be498Cd2267a90534A804051b11"));
+  console.log("WBTC getReserveData",await LendingPool.getReserveData("0x321162Cd933E2Be498Cd2267a90534A804051b11"));
+  console.log("WETH getConfiguration",await LendingPool.getConfiguration("0x74b23882a30290451A17c44f4F05243b6b58C76d")); // RF: divided by 2**64 = %50
+  console.log("WBTC getConfiguration",await LendingPool.getConfiguration("0x321162Cd933E2Be498Cd2267a90534A804051b11")); //50%
+  console.log("fusdt getConfiguration",await LendingPool.getConfiguration("0x049d68029688eAbF473097a2fC38ef61633A3C7A")); //50%
+  console.log("wftm getConfiguration",await LendingPool.getConfiguration("0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83"));
+  // let UiPoolDataProvider = await ethers.getContractAt("UiPoolDataProvider", "0x03c5f70748E0a0122C07A2F194E04B7d0Fb7E008", deployer);
+  // console.log("getSimpleReservesData ",await UiPoolDataProvider.getSimpleReservesData('0x6c793c628Fe2b480c5e6FB7957dDa4b9291F9c9b'));
+  
 }
 
 // We recommend this pattern to be able to use async/await everywhere

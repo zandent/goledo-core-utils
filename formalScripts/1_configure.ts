@@ -899,9 +899,9 @@ async function main() {
   await lendingPoolConfigurator.configureReserveAsCollateral(addresses.Markets.WETH.token, 8000, 8250, 10500);
   await lendingPoolConfigurator.configureReserveAsCollateral(addresses.Markets.WBTC.token, 7000, 7500, 11000);
   await lendingPoolConfigurator.setReserveFactor(addresses.Markets.CFX.token, 5000);
-  await lendingPoolConfigurator.setReserveFactor(addresses.Markets.USDT.token, 7500);
-  await lendingPoolConfigurator.setReserveFactor(addresses.Markets.WETH.token, 7500);
-  await lendingPoolConfigurator.setReserveFactor(addresses.Markets.WBTC.token, 7500);
+  await lendingPoolConfigurator.setReserveFactor(addresses.Markets.USDT.token, 5000);
+  await lendingPoolConfigurator.setReserveFactor(addresses.Markets.WETH.token, 5000);
+  await lendingPoolConfigurator.setReserveFactor(addresses.Markets.WBTC.token, 5000);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
