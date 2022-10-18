@@ -38,7 +38,7 @@ contract WETHGateway is IWETHGateway, Ownable {
    * @param onBehalfOf address of the user who will receive the aTokens representing the deposit
    * @param referralCode integrators are assigned a referral code and can potentially receive rewards.
    **/
-  function depositETH(
+  function depositCFX(
     address lendingPool,
     address onBehalfOf,
     uint16 referralCode
@@ -53,7 +53,7 @@ contract WETHGateway is IWETHGateway, Ownable {
    * @param amount amount of aWETH to withdraw and receive native ETH
    * @param to address of the user who will receive native ETH
    */
-  function withdrawETH(
+  function withdrawCFX(
     address lendingPool,
     uint256 amount,
     address to
@@ -79,7 +79,7 @@ contract WETHGateway is IWETHGateway, Ownable {
    * @param rateMode the rate mode to repay
    * @param onBehalfOf the address for which msg.sender is repaying
    */
-  function repayETH(
+  function repayCFX(
     address lendingPool,
     uint256 amount,
     uint256 rateMode,
@@ -112,7 +112,7 @@ contract WETHGateway is IWETHGateway, Ownable {
    * @param interesRateMode the interest rate mode
    * @param referralCode integrators are assigned a referral code and can potentially receive rewards
    */
-  function borrowETH(
+  function borrowCFX(
     address lendingPool,
     uint256 amount,
     uint256 interesRateMode,

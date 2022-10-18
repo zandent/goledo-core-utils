@@ -244,7 +244,7 @@ const RATE_STRATEGY: {
   },
 };
 const MAX_SUPPLY = ethers.utils.parseEther("1000000000");
-const GOLEDOVESTINGLOCKTIMESTAMP = 1665457200;
+const GOLEDOVESTINGLOCKTIMESTAMP = 1666285339;
 
 let goledoToken: GoledoToken;
 let lendingPoolAddressesProviderRegistry: LendingPoolAddressesProviderRegistry;
